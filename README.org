@@ -1,0 +1,43 @@
+#+TITLE: README
+
+This little hack allows you to place XQuery or JavaScript code blocks
+in org-mode files and evaluate them with babel using MarkLogic server.
+
+#+begin_src marklogic
+let $date1 := xs:dateTime("2016-04-17T12:34:56")
+let $date2 := xs:dateTime("2016-04-19T12:34:56")
+return
+  $date2 - $date1
+#+end_src
+
+#+RESULTS: datediff
+: P2D
+
+The default language is XQuery. If you want to use JavaScript,
+you have to say so:
+
+#+begin_src marklogic :language javascript
+var jsearch     = require('/MarkLogic/jsearch.sjs'),
+    collection  = jsearch.collections,
+    qbe         = jsearch.byExample;
+
+collection('muppets')
+  .documents()
+  .where(qbe({ name: 'waldorf'}))
+  .result();
+#+end_src
+
+#+RESULTS:
+: {"results":null, "estimate":0}
+
+You can explicitly say so for XQuery as well, if you like.
+
+Anyway. I’m putting this up on GitHub. I’ll clean it up and make it
+into a MELPA package, etc., after I get some feedback (positive or
+negative).
+
+## TODO
+
+* Support ~/v1/graphs/sparql~
+* Support ~vars~, ~database~, and ~txid~ on XQuery and JavaScript blocks
+* Pretty print ~application/json~ and ~application/xml~ results
