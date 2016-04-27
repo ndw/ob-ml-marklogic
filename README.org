@@ -36,7 +36,7 @@ Anyway. I’m putting this up on GitHub. I’ll clean it up and make it
 into a MELPA package, etc., after I get some feedback (positive or
 negative).
 
-## TODO
+* TODO
 
  * Fix the formating of this ORG file :-(
  * Support ~/v1/graphs/sparql~
