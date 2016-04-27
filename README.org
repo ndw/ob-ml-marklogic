@@ -38,6 +38,7 @@ negative).
 
 ## TODO
 
-* Support ~/v1/graphs/sparql~
-* Support ~vars~, ~database~, and ~txid~ on XQuery and JavaScript blocks
-* Pretty print ~application/json~ and ~application/xml~ results
+ * Fix the formating of this ORG file :-(
+ * Support ~/v1/graphs/sparql~
+ * Support ~vars~, ~database~, and ~txid~ on XQuery and JavaScript blocks
+ * Pretty print ~application/json~ and ~application/xml~ results
