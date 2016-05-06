@@ -99,17 +99,17 @@ return
 
 ** Configure with header arguments
 
-~:ml-curl~         :: The curl executable
-~:ml-host~         :: The MarkLogic hostname
-~:ml-scheme~       :: The URI scheme for requests
-~:ml-port~         :: The port for requests
-~:ml-eval-path~    :: The eval path
-~:ml-graphs-path~  :: The SPARQL eval path
-~:ml-auth~         :: Type of auth
-~:ml-username~     :: Username
-~:ml-password~     :: Password
-~:ml-output~       :: Output buffer
-~:ml-save-output~  :: Keep output buffer?
+ - ~:ml-curl~         :: The curl executable
+ - ~:ml-host~         :: The MarkLogic hostname
+ - ~:ml-scheme~       :: The URI scheme for requests
+ - ~:ml-port~         :: The port for requests
+ - ~:ml-eval-path~    :: The eval path
+ - ~:ml-graphs-path~  :: The SPARQL eval path
+ - ~:ml-auth~         :: Type of auth
+ - ~:ml-username~     :: Username
+ - ~:ml-password~     :: Password
+ - ~:ml-output~       :: Output buffer
+ - ~:ml-save-output~  :: Keep output buffer?
 
 You can specify the header arguments [[http://orgmode.org/manual/Header-arguments.html#Header-arguments][at any level]]. System defaults are
 stored in ~org-babel-default-header-args:marklogic~.
