@@ -1,20 +1,29 @@
 #+TITLE: README
 
-This little hack allows you to place XQuery or JavaScript code blocks
-in org-mode files and evaluate them with babel using MarkLogic server.
+This little hack allows you to place XQuery, JavaScript, or SPARQL
+code blocks in org-mode files and evaluate them with babel using
+MarkLogic server.
 
-#+begin_src marklogic
-let $date1 := xs:dateTime("2016-04-17T12:34:56")
-let $date2 := xs:dateTime("2016-04-19T12:34:56")
-return
-  $date2 - $date1
+#+begin_src marklogic :var startDate="2017-04-19T12:34:57"
+  xquery version "1.0-ml";
+
+  declare default function namespace "http://www.w3.org/2005/xpath-functions";
+
+  declare option xdmp:mapping "false";
+
+  declare variable $startDate external;
+
+  let $date   := $startDate cast as xs:dateTime
+  let $diff   := current-dateTime() - $date
+  return
+    current-dateTime() - $date
 #+end_src
 
-#+RESULTS: datediff
-: P2D
+#+RESULTS:
+: -P348DT9H45M4.273585S
 
-The default language is XQuery. If you want to use JavaScript,
-you have to say so:
+The default language is XQuery. If you want to use JavaScript, you
+have to say so:
 
 #+begin_src marklogic :language javascript
 var jsearch     = require('/MarkLogic/jsearch.sjs'),
@@ -28,17 +37,101 @@ collection('muppets')
 #+end_src
 
 #+RESULTS:
-: {"results":null, "estimate":0}
+: {
+:     "results": null,
+:     "estimate": 0
+: }
+
+If you want to use SPARQL, you have to say that too.
+
+#+begin_src marklogic :language sparql :var &database="nwn"
+PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c:     <http://nwalsh.com/rdf/contacts#>
+PREFIX v:     <http://nwalsh.com/rdf/vCard#>
+
+SELECT ?rdf
+WHERE
+{
+  ?rdf rdf:type c:Thing
+}
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{
+    "head": {
+        "vars": [
+            "rdf"
+        ]
+    },
+    "results": {
+        "bindings": [
+            {
+                "rdf": {
+                    "type": "uri",
+                    "value": "http:\/\/norman.walsh.name\/knows\/what\/DOM"
+                }
+            }
+        ]
+    }
+}
+#+end_example
 
 You can explicitly say so for XQuery as well, if you like.
 
-Anyway. I’m putting this up on GitHub. I’ll clean it up and make it
-into a MELPA package, etc., after I get some feedback (positive or
-negative).
+If the result is JSON or XML (and consists of a single part, it will
+be reformatted for legibility.)
 
-* Thigs to do
+#+begin_src marklogic
+let $_ := <doc><foo><bar><baz></baz></bar></foo></doc>
+return
+  $_
+#+end_src
 
- * Fix the formating of this ORG file :-(
- * Support ~/v1/graphs/sparql~
- * Support ~vars~, ~database~, and ~txid~ on XQuery and JavaScript blocks
- * Pretty print ~application/json~ and ~application/xml~ results
+#+RESULTS:
+: <doc>
+:   <foo>
+:     <bar>
+:       <baz/>
+:     </bar>
+:   </foo>
+: </doc>
+
+** Configure with header arguments
+
+~:ml-curl~         :: The curl executable
+~:ml-host~         :: The MarkLogic hostname
+~:ml-scheme~       :: The URI scheme for requests
+~:ml-port~         :: The port for requests
+~:ml-eval-path~    :: The eval path
+~:ml-graphs-path~  :: The SPARQL eval path
+~:ml-auth~         :: Type of auth
+~:ml-username~     :: Username
+~:ml-password~     :: Password
+~:ml-output~       :: Output buffer
+~:ml-save-output~  :: Keep output buffer?
+
+You can specify the header arguments [[http://orgmode.org/manual/Header-arguments.html#Header-arguments][at any level]]. System defaults are
+stored in ~org-babel-default-header-args:marklogic~.
+You'll probably need to change some of them. The request URI is
+constructed by concatenation:
+
+#+begin_src
+  :ml-scheme "://" :ml-host ":" :ml-port :ml-*-path
+#+end_src
+
+You’ll probably never need to change the ~:ml-eval-path~ or
+~:ml-graphs-path~.
+
+ If you don't specify ~:ml-auth~, then the requests will be made
+ without authentication. Setting ~:ml-save-output~ will prevent the
+ temporary buffer that's used to hold results from being deleted. That
+ can be useful if something goes wrong.
+
+You can also specify variables to the query, using the standard ~:var~
+header. Variable names that start with "&" are passed *to the eval
+endpoint*. All other variable names are passed through to the
+underlying query.
+
+Feedback welcome.
+
