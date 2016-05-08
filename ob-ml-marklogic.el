@@ -2,9 +2,13 @@
 
 ;; Copyright (C) 2016 Norman Walsh
 
-;; Author: Norman Walsh
+;; Author: Norman Walsh <ndw@nwalsh.com>
+;; Maintainer: Norman Walsh <ndw@nwalsh.com>
+;; Created: 2016-04-24
+;; Updated: 2016-05-08
+;; Version: 1.0.0
 ;; Keywords: MarkLogic, XQuery, JavaScript, SPARQL
-;; Homepage: http://github.com/ndw/ob-marklogic
+;; Homepage: http://github.com/ndw/ob-ml-marklogic
 
 ;; This file is NOT part of GNU Emacs.
 

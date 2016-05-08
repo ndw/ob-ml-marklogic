@@ -2,10 +2,6 @@
 
 ;; Copyright (C) 2016 Norman Walsh
 
-;; Author: Norman Walsh
-;; Keywords: MarkLogic, XQuery, JavaScript, SPARQL
-;; Homepage: http://github.com/ndw/ob-marklogic
-
 ;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
