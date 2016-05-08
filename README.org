@@ -103,6 +103,10 @@ please open an issue.
 # so that they show up in the online rendering. You want to copy
 # the blocks *inside* the begin_example/end_example lines!
 
+Note: The GitHub rendering of this section is a bit misleading
+as it elides the begin_src/end_src lines. Check the README.org
+file for a more accurate picture.
+
 XQuery:
 
 #+begin_example
