@@ -6,7 +6,7 @@ MarkLogic server.
 
 * Setup
 
-I’m working on getting this package into ELPA.
+I’m working on getting this package into MELPA.
 
 1. Put these files on your load path.
 2. ~(require 'ob-ml-marklogic)~ to load all of the language features.
@@ -104,7 +104,7 @@ please open an issue.
 # the blocks *inside* the begin_example/end_example lines!
 
 Note: The GitHub rendering of this section is a bit misleading
-as it elides the begin_src/end_src lines. Check the README.org
+as it elides the begin_src/end_src lines. Check the ~README.org~
 file for a more accurate picture.
 
 XQuery:
