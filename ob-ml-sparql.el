@@ -32,16 +32,16 @@
 (require 'ob)
 (require 'ob-ml-common)
 
-(defvar org-babel-default-header-args:sparql-ml
+(defvar org-babel-default-header-args:ml-sparql
   ob-ml-common-default-header-args)
 
-(defun org-babel-execute:sparql-ml (body params)
+(defun org-babel-execute:ml-sparql (body params)
   "Execute the query in BODY using the specified PARAMS.
 The code is executed by passing it to MarkLogic for evaluation.
 This function is called by `org-babel-execute-src-block'."
   (ob-ml-common-execute body params "sparql"))
 
-(defun org-babel-prep-session:sparql-ml (session params)
+(defun org-babel-prep-session:ml-sparql (session params)
   "Raise an error if a SESSION is passed with PARAMS.
 I haven't a clue what sessions are at the moment."
   (error "MarkLogic sessions are not supported at this time"))

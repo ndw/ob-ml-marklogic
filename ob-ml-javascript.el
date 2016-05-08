@@ -32,16 +32,16 @@
 (require 'ob)
 (require 'ob-ml-common)
 
-(defvar org-babel-default-header-args:javascript-ml
+(defvar org-babel-default-header-args:ml-javascript
   ob-ml-common-default-header-args)
 
-(defun org-babel-execute:javascript-ml (body params)
+(defun org-babel-execute:ml-javascript (body params)
   "Execute the query in BODY using the specified PARAMS.
 The code is executed by passing it to MarkLogic for evaluation.
 This function is called by `org-babel-execute-src-block'."
   (ob-ml-common-execute body params "javascript"))
 
-(defun org-babel-prep-session:javascript-ml (session params)
+(defun org-babel-prep-session:ml-javascript (session params)
   "Raise an error if a SESSION is passed with PARAMS.
 I haven't a clue what sessions are at the moment."
   (error "MarkLogic sessions are not supported at this time"))

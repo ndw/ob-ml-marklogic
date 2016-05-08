@@ -4,7 +4,7 @@ This little hack allows you to place XQuery, JavaScript, or SPARQL
 code blocks in org-mode files and evaluate them with babel using
 MarkLogic server.
 
-#+begin_src xquery-ml :var startDate="2017-04-19T12:34:57"
+#+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
   xquery version "1.0-ml";
 
   declare default function namespace "http://www.w3.org/2005/xpath-functions";
@@ -25,7 +25,7 @@ MarkLogic server.
 The default language is XQuery. If you want to use JavaScript, you
 have to say so:
 
-#+begin_src javascript-ml
+#+begin_src ml-javascript
   var jsearch     = require('/MarkLogic/jsearch.sjs'),
       collection  = jsearch.collections,
       qbe         = jsearch.byExample;
@@ -44,7 +44,7 @@ have to say so:
 
 If you want to use SPARQL, you have to say that too.
 
-#+begin_src sparql-ml :var &database="nwn"
+#+begin_src ml-sparql :var &database="nwn"
   PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX c:     <http://nwalsh.com/rdf/contacts#>
   PREFIX v:     <http://nwalsh.com/rdf/vCard#>
