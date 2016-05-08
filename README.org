@@ -79,14 +79,14 @@ through to the underlying query.
 For example:
 
 #+begin_example
-   #+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
+   :var startDate="2017-04-19T12:34:57"
 #+end_example
 
 Specifying the variable ~startDate~ passes it to the query (where it
 can be accessed by declaring it external). Alternatively:
 
 #+begin_example
-   #+begin_src ml-xquery :var &database="Documents"
+   :var &database="Documents"
 #+end_example
 
 Specifying the variable ~&database~ passes it /to the eval endpoint/.
