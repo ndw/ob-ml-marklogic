@@ -143,4 +143,6 @@
 (require 'ob-ml-sparql)
 (require 'ob-ml-xquery)
 
+(provide 'ob-ml-marklogic)
+
 ;;; ob-ml-marklogic.el ends here
