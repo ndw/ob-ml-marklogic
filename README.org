@@ -4,7 +4,7 @@ This little hack allows you to place XQuery, JavaScript, or SPARQL
 code blocks in org-mode files and evaluate them with babel using
 MarkLogic server.
 
-#+begin_src marklogic :var startDate="2017-04-19T12:34:57"
+#+begin_src xquery-ml :var startDate="2017-04-19T12:34:57"
   xquery version "1.0-ml";
 
   declare default function namespace "http://www.w3.org/2005/xpath-functions";
@@ -20,20 +20,20 @@ MarkLogic server.
 #+end_src
 
 #+RESULTS:
-: -P348DT9H45M4.273585S
+: -P347DT22H38.695693S
 
 The default language is XQuery. If you want to use JavaScript, you
 have to say so:
 
-#+begin_src marklogic :language javascript
-var jsearch     = require('/MarkLogic/jsearch.sjs'),
-    collection  = jsearch.collections,
-    qbe         = jsearch.byExample;
+#+begin_src javascript-ml
+  var jsearch     = require('/MarkLogic/jsearch.sjs'),
+      collection  = jsearch.collections,
+      qbe         = jsearch.byExample;
 
-collection('muppets')
-  .documents()
-  .where(qbe({ name: 'waldorf'}))
-  .result();
+  collection('muppets')
+    .documents()
+    .where(qbe({ name: 'waldorf'}))
+    .result();
 #+end_src
 
 #+RESULTS:
@@ -44,16 +44,16 @@ collection('muppets')
 
 If you want to use SPARQL, you have to say that too.
 
-#+begin_src marklogic :language sparql :var &database="nwn"
-PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX c:     <http://nwalsh.com/rdf/contacts#>
-PREFIX v:     <http://nwalsh.com/rdf/vCard#>
+#+begin_src sparql-ml :var &database="nwn"
+  PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  PREFIX c:     <http://nwalsh.com/rdf/contacts#>
+  PREFIX v:     <http://nwalsh.com/rdf/vCard#>
 
-SELECT ?rdf
-WHERE
-{
-  ?rdf rdf:type c:Thing
-}
+  SELECT ?rdf
+  WHERE
+  {
+    ?rdf rdf:type c:Thing
+  }
 #+end_src
 
 #+RESULTS:
@@ -134,4 +134,3 @@ endpoint*. All other variable names are passed through to the
 underlying query.
 
 Feedback welcome.
-

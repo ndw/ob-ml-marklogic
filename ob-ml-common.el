@@ -1,4 +1,4 @@
-;;; ob-marklogic.el --- org-babel functions for MarkLogic evaluation
+;;; ob-ml-common.el --- common functions for ob-ml-* modes
 
 ;; Copyright (C) 2016 Norman Walsh
 
@@ -25,120 +25,15 @@
 
 ;;; Commentary:
 
-;; This package provides org-mode support for evaluating code blocks
-;; by sending them off to MarkLogic server.
-
-;; XQuery, JavaScript and SPARQL are supported.  I've only tested on
-;; MarkLogic 8.x or later.  YMMV on earlier releases.
-
-;; There's nothing terribly fancy going on under the covers, this code
-;; marshals the arguments to curl.  So you need to have a working
-;; install of curl.  I've only tested this on Linux, but I expect it'll
-;; work on Mac.  Not so sure about Windows.
-
-;; Most of the configuration is done with header arguments.  These can
-;; be specified at any level.  The following header arguments are
-;; supported:
-
-;; :ml-curl        The curl executable
-;; :ml-host        The MarkLogic hostname
-;; :ml-scheme      The URI scheme for requests
-;; :ml-port        The port for requests
-;; :ml-eval-path   The eval path
-;; :ml-graphs-path The SPARQL eval path
-;; :ml-auth        Type of auth
-;; :ml-username    Username
-;; :ml-password    Password
-;; :ml-output      Output buffer
-;; :ml-save-output Keep output buffer?
-
-;; See the org-babel-default-header-args below for defaults.  You'll
-;; probably need to change some of them.  The request URI is constructed
-;; by concatenation:
-
-;;     :ml-scheme "://" :ml-host ":" :ml-port :ml-*-path
-
-;; If you don't specify :ml-auth, then the requests will be made without
-;; authentication.  Setting :ml-save-output will prevent the temporary
-;; buffer that's used to hold results from being deleted.  That can be
-;; useful if something goes wrong.
-
-;; You can also specify variables to the query, using the standard :var
-;; header argument.  Variable names that start with "&" are passed
-;; *to the eval endpoint*.  All other variable names are passed through
-;; to the underlying query.
-
-;; For example:
-
-;;    #+begin_src marklogic :var startDate="2017-04-19T12:34:57"
-
-;; This passes the variable "startDate" to the query (where it can
-;; be accessed by declaring it external). Alternatively:
-
-;;    #+begin_src marklogic :var &database="Documents"
-
-;; This sets the "database" query parameter to the eval endpoint.
-;; (We're careful to set "database" and "txid" parameters on the
-;; URI so that they're accessible to the declarative rewriter; if
-;; you don't know what that means, just ignore this parenthetical
-;; comment.)
-
-;; You can specify as many variables as you wish.  You'll no doubt get
-;; errors if you pass things that the endpoint or query aren't expecting.
-;; I have no idea how well my code plays with advanced org-mode features
-;; like reference to other named code blocks.  If you see something
-;; weird, please open an issue.
-
-;; The results are very dependent on the "-v" output from curl.  Here's
-;; what I expect:
-
-;;    *   Trying 172.17.0.2...
-;;      ...
-;;    * upload completely sent off: 192 out of 192 bytes
-;;    < HTTP/1.1 200 OK
-;;    < Content-type: application/sparql-results+json; charset=UTF-8
-;;    < Server: MarkLogic
-;;    < Content-Length: 123
-;;    < Connection: Keep-Alive
-;;    < Keep-Alive: timeout=5
-;;    <
-;;    { [123 bytes data]
-;;    * Connection #0 to host f23-builder left intact
-;;
-;;    ACTUAL RESULTS GO HERE
-
-;; In brief: ignore all of the results up to the line that contains
-;; "upload completely sent off".  Then skip the HTTP/1.1 and parse
-;; the headers.  Then skip to the results.
-
-;; If the response is multipart *and* there's only one part, the
-;; multipart scaffolding is stripped away, taking care to parse the
-;; part headers to get the actual content type.
-
-;; Because...
-
-;; If there's only one part:
-;;
-;;   * If it's JSON and 'json-reformat-region is available, the
-;;     result is reformatted before returning it.
-;;   * If it's XML and nxml-mode is available, the result
-;;     is reformatted before returning it.
-;;
-;; If there's more than one part, you just get the whole thing as
-;; it appeared on the wire.
-
-;; TODO:
-;;
-;; * Consider reformatting the individual parts of a multipart
-;;   response
+;; This file is a common library module.  See ob-ml-marklogic.el.
 
 ;;; Code:
 
 (require 'ob)
 
-(defvar org-babel-default-header-args:marklogic
+(defvar ob-ml-common-default-header-args
   '((:ml-curl . "/usr/bin/curl")
-    (:ml-host . "f23-builder")
+    (:ml-host . "localhost")
     (:ml-scheme . "http")
     (:ml-port . 8000)
     (:ml-eval-path . "/v1/eval")
@@ -146,15 +41,15 @@
     (:ml-username . "admin")
     (:ml-password . "admin")
     (:ml-auth . "--digest")
-    (:ml-output . "*ob-marklogic output*")
+    (:ml-output . "*ob-ml-marklogic output*")
     (:ml-save-output . nil)))
 
-(defun org-babel-execute:marklogic (body params)
+(defun ob-ml-common-execute (body params &optional default-language)
   "Execute the query in BODY using the specified PARAMS.
-The code is executed by passing it to MarkLogic for evaluation.
-This function is called by `org-babel-execute-src-block'."
+If no `:language' is specified in the block, DEFAULT-LANGUAGE is assumed.
+The code is executed by passing it to MarkLogic for evaluation."
   (let* ((lparam   (cdr (assq :language params)))
-         (language (cond ((eq nil lparam) "xquery")
+         (language (cond ((eq nil lparam) default-language)
                          ((string= "xquery" lparam) "xquery")
                          ((string= "xqy" lparam) "xquery")
                          ((string= "javascript" lparam) "javascript")
@@ -216,17 +111,12 @@ This function is called by `org-babel-execute-src-block'."
                uvar (list (concat uripfx path)))))
       (eval process)
       (set-buffer tempbuf)
-      (setq results (ob-marklogic-get-results))
+      (setq results (ob-ml-common--get-results))
       (if (not (and (assq :ml-save-output params) (cdr (assq :ml-save-output params))))
           (kill-buffer bufname))
       results)))
 
-(defun org-babel-prep-session:marklogic (session params)
-  "Raise an error if a SESSION is passed with PARAMS.
-I haven't a clue what sessions are at the moment."
-  (error "MarkLogic sessions are not supported at this time"))
-
-(defun ob-marklogic-get-results ()
+(defun ob-ml-common--get-results ()
   "Parse the output of curl, extracting the results."
   (let ((line nil)
         (lastline nil)
@@ -242,7 +132,7 @@ I haven't a clue what sessions are at the moment."
               (forward-line)
               (delete-region 1 (point))
               (forward-line)
-              (setq headers (ob-marklogic-get-headers "< "))
+              (setq headers (ob-ml-common--get-headers "< "))
               (delete-region 1 (point))
               (re-search-forward "\\* Connection .* to host .* left intact")
               (beginning-of-line)
@@ -262,7 +152,7 @@ I haven't a clue what sessions are at the moment."
               (re-search-forward line nil t)
               (beginning-of-line)
               (forward-line)
-              (setq headers (ob-marklogic-get-headers nil headers))
+              (setq headers (ob-ml-common--get-headers nil headers))
               (forward-line)
               (delete-region 1 (point))
               (re-search-forward lastline nil t)
@@ -287,11 +177,11 @@ I haven't a clue what sessions are at the moment."
                           (featurep 'nxml-mode))
                      (progn
                        (goto-char (point-max))
-                       (ob-marklogic-xml-reformat-region 1 (point))))
+                       (ob-ml-common--xml-reformat-region 1 (point))))
                     (t nil))))
         (buffer-string)))))
 
-(defun ob-marklogic-get-headers (&optional pfx headers)
+(defun ob-ml-common--get-headers (&optional pfx headers)
   "Parse MIME headers from the buffer.  Crudely.
 This function looks for lines that appear to be headers (`Name: value' pairs).
 It advances forward through the buffer recording the headers that it finds
@@ -319,7 +209,7 @@ will be updated and the updated result returned."
     headers))
 
 ;; https://stackoverflow.com/questions/12492/pretty-printing-xml-files-on-emacs
-(defun ob-marklogic-xml-reformat-region (begin end)
+(defun ob-ml-common--xml-reformat-region (begin end)
   "Use a combination of regex hacking and `nxml-mode' to reformat XML.
 The region between BEGIN and END will be reformatted.  Any
 whitespace-only nodes between elements are considered fair game
@@ -333,6 +223,6 @@ https://stackoverflow.com/questions/12492/pretty-printing-xml-files-on-emacs"
         (backward-char) (insert "\n"))
       (indent-region begin end)))
 
-(provide 'ob-marklogic)
+(provide 'ob-ml-common)
 
-;;; ob-marklogic.el ends here
+;;; ob-ml-common.el ends here
