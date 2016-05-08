@@ -69,12 +69,12 @@
 
 ;; For example:
 
-;;    #+begin_src marklogic :var startDate="2017-04-19T12:34:57"
+;;    #+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
 
 ;; This passes the variable "startDate" to the query (where it can
 ;; be accessed by declaring it external). Alternatively:
 
-;;    #+begin_src marklogic :var &database="Documents"
+;;    #+begin_src ml-xquery :var &database="Documents"
 
 ;; This sets the "database" query parameter to the eval endpoint.
 ;; (We're careful to set "database" and "txid" parameters on the

@@ -4,27 +4,132 @@ This little hack allows you to place XQuery, JavaScript, or SPARQL
 code blocks in org-mode files and evaluate them with babel using
 MarkLogic server.
 
-#+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
-  xquery version "1.0-ml";
+* Setup
 
-  declare default function namespace "http://www.w3.org/2005/xpath-functions";
+I’m working on getting this package into ELPA.
 
-  declare option xdmp:mapping "false";
+1. Put these files on your load path.
+2. ~(require 'ob-ml-marklogic)~ to load all of the language features.
+   (Alternatively, require only the languages you need.)
+3. Add some or all of ~ml-xquery~, ~ml-javascript~, and ~ml-xquery~ to
+   the ~org-babel-load-languages~:
 
-  declare variable $startDate external;
+   #+begin_src elisp
+   (org-babel-do-load-languages
+    'org-babel-load-languages
+    ; load all language marked with (lang . t).
+    '((ml-xquery . t)
+      (ml-javascript . t)
+      (ml-sparql . t)
+      …))
+   #+end_src
 
-  let $date   := $startDate cast as xs:dateTime
-  let $diff   := current-dateTime() - $date
-  return
-    current-dateTime() - $date
+4. Add the language/editing mode mappings to ~org-src-lang-modes~:
+
+   #+begin_src elisp
+   (add-to-list 'org-src-lang-modes '("ml-xquery" . xquery))
+   (add-to-list 'org-src-lang-modes '("ml-javascript" . javascript))
+   (add-to-list 'org-src-lang-modes '("ml-sparql" . sparql))
+   #+end_src
+
+5. Happy editing.
+
+** Configuration
+
+Most of the configuration is done with header arguments. These can be
+specified [[http://orgmode.org/manual/Header-arguments.html#Header-arguments][at any level]].
+The following header arguments are supported:
+
+ - ~:ml-curl~         :: The curl executable
+ - ~:ml-host~         :: The MarkLogic hostname
+ - ~:ml-scheme~       :: The URI scheme for requests
+ - ~:ml-port~         :: The port for requests
+ - ~:ml-eval-path~    :: The eval path
+ - ~:ml-graphs-path~  :: The SPARQL eval path
+ - ~:ml-auth~         :: Type of auth
+ - ~:ml-username~     :: Username
+ - ~:ml-password~     :: Password
+ - ~:ml-output~       :: Output buffer
+ - ~:ml-save-output~  :: Keep output buffer?
+
+System defaults are
+stored in ~ob-ml-common-default-header-args~ in ~ob-ml-common.el~.
+You'll probably need to change some of them. The request URI is
+constructed by concatenation:
+
+#+begin_src
+  :ml-scheme "://" :ml-host ":" :ml-port :ml-*-path
 #+end_src
 
+You’ll probably never need to change the ~:ml-eval-path~ or
+~:ml-graphs-path~.
+
+ If you don't specify ~:ml-auth~, then the requests will be made
+ without authentication. Setting ~:ml-save-output~ will prevent the
+ temporary buffer that's used to hold results from being deleted. That
+ can be useful if something goes wrong.
+
+*** Query parameters
+
+You can also pass query parameters and variables to the query using
+the standard ~:var~ header. Variable names that start with "&" are
+passed *to the eval endpoint*. All other variable names are passed
+through to the underlying query.
+
+For example:
+
+#+begin_src
+   #+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
+#+end_src
+
+Specifying the variable ~startDate~ passes it to the query (where it
+can be accessed by declaring it external). Alternatively:
+
+#+begin_src
+   #+begin_src ml-xquery :var &database="Documents"
+#+end_src
+
+Specifying the variable ~&database~ passes it /to the eval endpoint/.
+
+You can specify as many variables as you wish. You'll no doubt get
+errors if you pass things that the endpoint or query aren't expecting.
+I have no idea how well my code plays with advanced org-mode features
+like reference to other named code blocks. If you see something weird,
+please open an issue.
+
+* Examples
+
+# Note: the begin_src/end_src blocks and the results are quoted here
+# so that they show up in the online rendering. You want to copy
+# the blocks *inside* the begin_example/end_example lines!
+
+XQuery:
+
+#+begin_example
+#+begin_src ml-xquery :var startDate="2017-04-19T12:34:57"
+    xquery version "1.0-ml";
+
+    declare default function namespace "http://www.w3.org/2005/xpath-functions";
+
+    declare option xdmp:mapping "false";
+
+    declare variable $startDate external;
+
+    let $date   := $startDate cast as xs:dateTime
+    let $diff   := current-dateTime() - $date
+    return
+      current-dateTime() - $date
+#+end_src
+#+end_example
+
+#+begin_example
 #+RESULTS:
 : -P347DT22H38.695693S
+#+end_example
 
-The default language is XQuery. If you want to use JavaScript, you
-have to say so:
+JavaScript:
 
+#+begin_example
 #+begin_src ml-javascript
   var jsearch     = require('/MarkLogic/jsearch.sjs'),
       collection  = jsearch.collections,
@@ -35,15 +140,19 @@ have to say so:
     .where(qbe({ name: 'waldorf'}))
     .result();
 #+end_src
+#+end_example
 
+#+begin_example
 #+RESULTS:
 : {
 :     "results": null,
 :     "estimate": 0
 : }
+#+end_example
 
-If you want to use SPARQL, you have to say that too.
+SPARQL:
 
+#+begin_example
 #+begin_src ml-sparql :var &database="nwn"
   PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX c:     <http://nwalsh.com/rdf/contacts#>
@@ -55,9 +164,10 @@ If you want to use SPARQL, you have to say that too.
     ?rdf rdf:type c:Thing
   }
 #+end_src
+#+end_example
 
-#+RESULTS:
 #+begin_example
+#+RESULTS:
 {
     "head": {
         "vars": [
@@ -77,17 +187,18 @@ If you want to use SPARQL, you have to say that too.
 }
 #+end_example
 
-You can explicitly say so for XQuery as well, if you like.
-
 If the result is JSON or XML (and consists of a single part, it will
 be reformatted for legibility.)
 
+#+begin_example
 #+begin_src marklogic
 let $_ := <doc><foo><bar><baz></baz></bar></foo></doc>
 return
   $_
 #+end_src
+#+end_example
 
+#+begin_example
 #+RESULTS:
 : <doc>
 :   <foo>
@@ -96,41 +207,10 @@ return
 :     </bar>
 :   </foo>
 : </doc>
+#+end_example
 
-** Configure with header arguments
+* Feedback welcome
 
- - ~:ml-curl~         :: The curl executable
- - ~:ml-host~         :: The MarkLogic hostname
- - ~:ml-scheme~       :: The URI scheme for requests
- - ~:ml-port~         :: The port for requests
- - ~:ml-eval-path~    :: The eval path
- - ~:ml-graphs-path~  :: The SPARQL eval path
- - ~:ml-auth~         :: Type of auth
- - ~:ml-username~     :: Username
- - ~:ml-password~     :: Password
- - ~:ml-output~       :: Output buffer
- - ~:ml-save-output~  :: Keep output buffer?
-
-You can specify the header arguments [[http://orgmode.org/manual/Header-arguments.html#Header-arguments][at any level]]. System defaults are
-stored in ~org-babel-default-header-args:marklogic~.
-You'll probably need to change some of them. The request URI is
-constructed by concatenation:
-
-#+begin_src
-  :ml-scheme "://" :ml-host ":" :ml-port :ml-*-path
-#+end_src
-
-You’ll probably never need to change the ~:ml-eval-path~ or
-~:ml-graphs-path~.
-
- If you don't specify ~:ml-auth~, then the requests will be made
- without authentication. Setting ~:ml-save-output~ will prevent the
- temporary buffer that's used to hold results from being deleted. That
- can be useful if something goes wrong.
-
-You can also specify variables to the query, using the standard ~:var~
-header. Variable names that start with "&" are passed *to the eval
-endpoint*. All other variable names are passed through to the
-underlying query.
-
-Feedback welcome.
+Kudos, complaints, bug reports, etc. most welcome.
+Please open an issue for bugs or observations of failure in my
+Emacs lisp style.
