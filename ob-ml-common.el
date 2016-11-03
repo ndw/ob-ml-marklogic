@@ -122,7 +122,9 @@ The code is executed by passing it to MarkLogic for evaluation."
       (save-match-data
         (delete-trailing-whitespace)
         (goto-char (point-min))
-        (if (search-forward "upload completely sent off")
+        (while (or 
+                (search-forward "upload completely sent off" nil t)
+                (search-forward "completely uploaded and fine" nil t))
             (progn
               (beginning-of-line)
               (forward-line)
