@@ -195,7 +195,7 @@ If the result is JSON or XML (and consists of a single part, it will
 be reformatted for legibility.)
 
 #+begin_example
-#+begin_src marklogic
+#+begin_src ml-xquery
 let $_ := <doc><foo><bar><baz></baz></bar></foo></doc>
 return
   $_
