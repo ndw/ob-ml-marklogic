@@ -1,14 +1,19 @@
 ;;; ob-ml-marklogic.el --- org-babel functions for MarkLogic evaluation
 
-;; Copyright (C) 2016 Norman Walsh
+;; Copyright (C) 2016,2019 Norman Walsh
 
 ;; Author: Norman Walsh <ndw@nwalsh.com>
 ;; Maintainer: Norman Walsh <ndw@nwalsh.com>
 ;; Created: 2016-04-24
-;; Updated: 2016-05-08
-;; Version: 1.0.0
+;; Updated: 2019-03-12
+;; Version: 1.1.0
 ;; Keywords: MarkLogic, XQuery, JavaScript, SPARQL
 ;; Homepage: http://github.com/ndw/ob-ml-marklogic
+
+;; Changes:
+;; 1.1.0 - Improved results buffer handling (avoid error if the results are empty).
+;;       - Updated call-process to make sure the query and parameters are properly
+;;         URL encoded.
 
 ;; This file is NOT part of GNU Emacs.
 

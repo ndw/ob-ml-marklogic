@@ -6,9 +6,9 @@ MarkLogic server.
 
 * Setup
 
-I’m working on getting this package into MELPA.
+The easiest way to get the package is probably [[https://github.com/melpa/melpa][from MELPA]].
 
-1. Put these files on your load path.
+1. Install the package by getting it from MELPA or putting these files in your load-path.
 2. ~(require 'ob-ml-marklogic)~ to load all of the language features.
    (Alternatively, require only the languages you need.)
 3. Add some or all of ~ml-xquery~, ~ml-javascript~, and ~ml-xquery~ to
