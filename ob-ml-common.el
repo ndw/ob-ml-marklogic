@@ -99,11 +99,11 @@ The code is executed by passing it to MarkLogic for evaluation."
                        "-v" "-s" "-X" "POST" (cdr (assq :ml-auth params))
                        "-u" (concat (cdr (assq :ml-username params))
                                     ":" (cdr (assq :ml-password params)))
-                       "-d" (concat qname "=" body))
+                       "--data-urlencode" (concat qname "=" body))
                  uvar (list (concat uripfx path)))
               (append
                (list 'call-process (cdr (assq :ml-curl params)) nil bufname nil
-                     "-v" "-s" "-X" "POST" "-d" (concat qname "=" body))
+                     "-v" "-s" "-X" "POST" "--data-urlencode" (concat qname "=" body))
                uvar (list (concat uripfx path)))))
       (set-buffer tempbuf)
       (erase-buffer)
