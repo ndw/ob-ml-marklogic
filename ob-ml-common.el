@@ -88,7 +88,7 @@ The code is executed by passing it to MarkLogic for evaluation."
                     (setq uvar (cons "-d" (cons (concat tname "=" value) uvar))))
                 (setq qvar (cons (concat "\"" name "\":\"" value "\"") qvar))))))
       (if (not (eq nil qvar))
-          (setq uvar (cons "-d"
+          (setq uvar (cons "--data-urlencode"
                            (cons
                             (concat "vars={" (mapconcat 'identity qvar ",") "}")
                             uvar))))
